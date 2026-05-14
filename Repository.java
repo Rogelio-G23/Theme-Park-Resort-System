@@ -34,11 +34,13 @@ public class Repository{
     // ADD TICKET INTO THE DATABASE
 public void addTicket(Reservation reserve) {
     try {
-        String sql = "INSERT INTO TicketDatabase (Customer_Name, Ticket_Type, Contact) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO TicketDatabase (Customer_Name, Ticket_Type, Contact, Booking_Date)VALUES (?, ?, ?, ?)";
         PreparedStatement stmt = getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+
         stmt.setString(1, reserve.getCustomerName());
         stmt.setString(2, reserve.getTicketType());
         stmt.setString(3, reserve.getContact());
+        stmt.setString(4, reserve.getBookingDate());
         stmt.executeUpdate();
 
         ResultSet keys = stmt.getGeneratedKeys();
@@ -57,11 +59,12 @@ public void addTicket(Reservation reserve) {
 // ADD ROOM BOOKING INTO DATABASE
     public void addRoom(Reservation reserve){
         try {
-            String sql = "INSERT INTO RoomDatabase (Room_Number, Customer_Name, Contact) VALUES (?, ?, ?)";
+            String sql = "INSERT INTO RoomDatabase(Room_Number, Customer_Name, Contact, Booking_Date) VALUES (?, ?, ?, ?)";
             PreparedStatement stmt = getConnection().prepareStatement(sql);
             stmt.setInt(1, reserve.getRoomNumber());
             stmt.setString(2, reserve.getCustomerName());
             stmt.setString(3, reserve.getContact());
+            stmt.setString(4, reserve.getBookingDate());
             stmt.executeUpdate();
             stmt.close();
             System.out.println("Booking confirmed!");
@@ -168,4 +171,24 @@ public boolean isRoomTaken(int roomNumber) {
             System.out.println("Query failed: " + e.getMessage());
         }
     }
+    
+    public void savePayment(String customerName, String ticketType, String paymentMethod, double totalAmount) {
+
+    String sql = "INSERT INTO PaymentDatabase(Customer_Name, Ticket_Type, Payment_Method, Total_Amount, Payment_Date) VALUES (?, ?, ?, ?, ?)";
+
+    try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+        stmt.setString(1, customerName);
+        stmt.setString(2, ticketType);
+        stmt.setString(3, paymentMethod);
+        stmt.setDouble(4, totalAmount);
+        
+        stmt.setString(5,java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+
+        stmt.executeUpdate();
+
+    } catch (SQLException e) {
+        System.out.println("Payment insert failed: " + e.getMessage());
+    }
+}
 }
