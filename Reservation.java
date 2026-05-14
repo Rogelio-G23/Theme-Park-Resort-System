@@ -6,12 +6,14 @@ public class Reservation {
     private final String ticketType;
     private final int roomNumber;
     private final String contact;
+    private final String bookingDate;
     
     private Reservation(Builder builder){
         this.customerName = builder.customerName;
         this.ticketType = builder.ticketType;
         this.roomNumber = builder.roomNumber;
         this.contact = builder.contact;
+        this.bookingDate = builder.bookingDate;
     }
     
     public String getCustomerName(){
@@ -29,12 +31,17 @@ public class Reservation {
     public String getContact(){
         return contact;
     }
+
+    public String getBookingDate(){
+        return bookingDate;
+    }
     
     public static class Builder {
         private String customerName;
         private String ticketType;
         private int roomNumber;
         private String contact;
+        private String bookingDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         
         public Builder setCustomerName(String customerName){
             this.customerName = customerName;
@@ -53,6 +60,11 @@ public class Reservation {
         
         public Builder setContact(String contact){
             this.contact = contact;
+            return this;
+        }
+
+        public Builder setBookingDate(String bookingDate){
+            this.bookingDate = bookingDate;
             return this;
         }
         
@@ -80,59 +92,95 @@ public class Reservation {
     }
     
     public void addCustomerStandard(){
-        Scanner scan = new Scanner(System.in);
-        Repository repo = new Repository();
-        Services service = new Services();
-    
-        System.out.println("\n=== CUSTOMER DETAILS ===");
-        System.out.print("Name: ");
-        String customerName = scan.nextLine();
-        System.out.print("Contact: ");
-        String contact = scan.nextLine();
-    
-        Reservation reserve = new Reservation.Builder()
-                .setCustomerName(customerName)
-                .setTicketType("Standard")
-                .setContact(contact)
-                .build();
-                
-        repo.addTicket(reserve);
 
-        System.out.println("\n=== RESERVATION CONFIRMED ===");
-        System.out.println("Customer Name : " + customerName);
-        System.out.println("Ticket Type   : Standard");
-        System.out.println("Contact       : " + contact);
-        System.out.println("Please remember your Customer ID for Front Desk check-in!");
+    Scanner scan = new Scanner(System.in);
+    Repository repo = new Repository();
+    Services service = new Services();
 
-        service.frontDesk();
-    }
+    System.out.println("\n=== CUSTOMER DETAILS ===");
+
+    System.out.print("Name: ");
+    String customerName = scan.nextLine();
+
+    System.out.print("Contact: ");
+    String contact = scan.nextLine();
+
+    Reservation reserve = new Reservation.Builder()
+            .setCustomerName(customerName)
+            .setTicketType("Standard")
+            .setContact(contact)
+            .build();
+
+    repo.addTicket(reserve);
+
+    double ticketPrice = 500;
+
+    System.out.println("\n=== PAYMENT ===");
+    System.out.println("Ticket Price: PHP " + ticketPrice);
+
+    System.out.print("Payment Method (Cash/GCash/Card): ");
+    String paymentMethod = scan.nextLine();
+
+    TicketPayment payment = new TicketPayment(
+            ticketPrice,
+            0.00,
+            paymentMethod,
+            reserve
+    );
+
+    payment.processInvoice();
+
+    System.out.println("\n=== RESERVATION CONFIRMED ===");
+    System.out.println("Customer Name : " + customerName);
+    System.out.println("Ticket Type   : Standard");
+
+    service.frontDesk();
+}
     
     public void addCustomerVip(){
-        Scanner scan = new Scanner(System.in);
-        Repository repo = new Repository();
-        Services service = new Services();
-        
-        System.out.println("\n=== CUSTOMER DETAILS ===");
-        System.out.print("Name: ");
-        String customerName = scan.nextLine();
-        System.out.print("Contact: ");
-        String contact = scan.nextLine();
-            
-        Reservation reserve = new Reservation.Builder()
-                .setCustomerName(customerName)
-                .setTicketType("VIP")
-                .setContact(contact)
-                .build();
-                
-        repo.addTicket(reserve);
 
-        System.out.println("\n=== RESERVATION CONFIRMED ===");
-        System.out.println("Customer Name : " + customerName);
-        System.out.println("Ticket Type   : VIP");
-        System.out.println("Contact       : " + contact);
-        System.out.println("Please remember your Customer ID for Front Desk check-in!");
+    Scanner scan = new Scanner(System.in);
+    Repository repo = new Repository();
+    Services service = new Services();
 
-        service.bookRoom();
-        service.frontDesk();
-    }
+    System.out.println("\n=== CUSTOMER DETAILS ===");
+
+    System.out.print("Name: ");
+    String customerName = scan.nextLine();
+
+    System.out.print("Contact: ");
+    String contact = scan.nextLine();
+
+    Reservation reserve = new Reservation.Builder()
+            .setCustomerName(customerName)
+            .setTicketType("VIP")
+            .setContact(contact)
+            .build();
+
+    repo.addTicket(reserve);
+
+    double ticketPrice = 1200;
+
+    System.out.println("\n=== PAYMENT ===");
+    System.out.println("VIP Ticket Price: PHP " + ticketPrice);
+
+    System.out.print("Payment Method (Cash/GCash/Card): ");
+    String paymentMethod = scan.nextLine();
+
+    TicketPayment payment = new TicketPayment(
+            ticketPrice,
+            0.10,
+            paymentMethod,
+            reserve
+    );
+
+    payment.processInvoice();
+
+    System.out.println("\n=== RESERVATION CONFIRMED ===");
+    System.out.println("Customer Name : " + customerName);
+    System.out.println("Ticket Type   : VIP");
+
+    service.bookRoom();
+    service.frontDesk();
+}
 }
